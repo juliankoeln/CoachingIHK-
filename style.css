@@ -527,3 +527,74 @@ body.display-mode {
 .display-result-score  { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 8px; }
 .display-result-correct { font-size: 13px; color: var(--success); margin-top: 4px; padding: 4px 10px; background: rgba(93,223,176,.08); border-radius: var(--r-sm); }
 .display-result-wrong   { font-size: 13px; color: var(--accent3); margin-top: 4px; padding: 4px 10px; background: rgba(249,123,107,.08); border-radius: var(--r-sm); }
+
+/* ── Mod Topbar ─────────────────────────────────────────────────────────── */
+.mod-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+/* Push content down when topbar is visible */
+.has-topbar .page {
+  padding-top: 72px;
+}
+
+/* ── Beamer link box ────────────────────────────────────────────────────── */
+.display-link-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--accent2);
+  border-radius: var(--r-sm);
+  padding: 10px 16px;
+  text-decoration: none;
+  color: var(--accent2);
+  font-size: 13px;
+  word-break: break-all;
+  transition: all .15s;
+  margin-bottom: 4px;
+}
+.display-link-box:hover {
+  background: rgba(123,110,246,.1);
+  border-color: var(--accent2);
+}
+.display-link-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ── Field label ────────────────────────────────────────────────────────── */
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+}
+
+/* ── Put-away hint ──────────────────────────────────────────────────────── */
+.put-away-card {
+  text-align: center;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 24px;
+  margin: 16px 0;
+}
+
+/* ── Idle screen ────────────────────────────────────────────────────────── */
+#screen-participant-idle .page {
+  min-height: 100vh;
+}

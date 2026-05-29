@@ -1,4 +1,4 @@
-// app.js – CoachBoard v2
+// app.js – CoachBoard v3
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 function randomCode() {
@@ -20,17 +20,31 @@ function toast(msg, type = 'info') {
 }
 
 // ─── State ─────────────────────────────────────────────────────────────────
-let sessionCode  = null;
-let sessionRef   = null;
-let myName       = null;
-let myId         = null;
-let isModerator  = false;
-let isDisplay    = false;   // ?display=1 → Beamer-Ansicht
-let phaseListener = null;   // keep reference to detach/re-attach cleanly
+let sessionCode     = null;
+let sessionRef      = null;
+let myName          = null;
+let myId            = null;
+let isModerator     = false;
+let isDisplay       = false;
+let phaseListener   = null;
 let answersListener = null;
 let votesListener   = null;
 
-// ─── DISPLAY MODE (?display=1&code=XXXXX) ──────────────────────────────────
+// ─── MOD TOPBAR ────────────────────────────────────────────────────────────
+function showModTopbar() {
+  const bar = document.getElementById('mod-topbar');
+  bar.style.display = 'flex';
+  document.getElementById('btn-topbar-welcome').onclick = () => {
+    goToWelcome();
+  };
+}
+
+function goToWelcome() {
+  sessionRef.child('phase').set('welcome');
+  showScreen('screen-mod-welcome-edit');
+}
+
+// ─── DISPLAY MODE ──────────────────────────────────────────────────────────
 isDisplay = getUrlParam('display') === '1';
 if (isDisplay) {
   sessionCode = getUrlParam('code');
@@ -45,19 +59,11 @@ function watchDisplayPhase() {
     const session = snap.val();
     if (!session) return;
     const phase = session.phase;
-
-    // Willkommensscreen
-    if (phase === 'welcome') {
-      showDisplayWelcome(session.welcome || {});
-    } else if (phase === 'lobby') {
-      showDisplayLobby(session);
-    } else if (phase === 'input') {
-      showDisplayInput(session);
-    } else if (phase === 'voting') {
-      showDisplayVoting(session);
-    } else if (phase === 'results') {
-      showDisplayResults(session);
-    }
+    if      (phase === 'welcome') showDisplayWelcome(session.welcome || {});
+    else if (phase === 'lobby')   showDisplayLobby(session);
+    else if (phase === 'input')   showDisplayInput(session);
+    else if (phase === 'voting')  showDisplayVoting(session);
+    else if (phase === 'results') showDisplayResults(session);
   });
 }
 
@@ -80,10 +86,9 @@ function showDisplayLobby(session) {
   const chips = Object.values(participants)
     .map(p => `<div class="display-chip"><span class="chip-dot"></span>${p.name}</div>`)
     .join('');
-  const code = session.code;
+  const code    = session.code;
   const joinUrl = window.location.origin + window.location.pathname + '?join=' + code;
 
-  // Build QR in display
   setDisplayContent(`
     <div class="display-lobby">
       <div class="display-lobby-left">
@@ -92,14 +97,11 @@ function showDisplayLobby(session) {
         <div class="display-code">${code}</div>
       </div>
       <div class="display-lobby-right">
-        <div class="display-label">Verbunden</div>
-        <div class="display-chips" id="display-chips">${chips || '<span style="color:var(--muted)">Warten…</span>'}</div>
-        <div class="display-count">${Object.keys(participants).length} Teilnehmer</div>
+        <div class="display-label">Verbunden (${Object.keys(participants).length})</div>
+        <div class="display-chips">${chips || '<span style="color:var(--muted)">Warten…</span>'}</div>
       </div>
     </div>
   `);
-
-  // Render QR
   setTimeout(() => {
     const el = document.getElementById('display-qr');
     if (el && el.children.length === 0) {
@@ -139,16 +141,14 @@ function showDisplayVoting(session) {
 }
 
 async function showDisplayResults(session) {
-  const answers = session.answers || {};
-  const votes   = session.votes   || {};
+  const answers      = session.answers      || {};
+  const votes        = session.votes        || {};
   const participants = session.participants || {};
-
   const nameMap = {};
   Object.entries(participants).forEach(([id, p]) => nameMap[id] = p.name);
 
   const items = Object.entries(answers).map(([authorId, answer]) => {
-    const correctGuessers = [];
-    const wrongGuessers   = [];
+    const correctGuessers = [], wrongGuessers = [];
     Object.entries(votes).forEach(([voterId, voterVotes]) => {
       const guessedId = voterVotes[authorId];
       if (!guessedId) return;
@@ -169,8 +169,7 @@ async function showDisplayResults(session) {
           <span class="display-result-score">${guessed} von ${total} erraten</span></div>
         ${item.correctGuessers.length ? `<div class="display-result-correct">✓ ${item.correctGuessers.join(', ')}</div>` : ''}
         ${item.wrongGuessers.length   ? `<div class="display-result-wrong">✗ ${item.wrongGuessers.map(w=>`${w.voter} → ${w.guessed}`).join(', ')}</div>` : ''}
-      </div>
-    `;
+      </div>`;
   }).join('');
 
   setDisplayContent(`
@@ -189,7 +188,6 @@ if (!isDisplay) {
       sessionCode = randomCode();
       isModerator = true;
       sessionRef  = db.ref('sessions/' + sessionCode);
-
       sessionRef.set({
         code: sessionCode,
         createdAt: Date.now(),
@@ -199,51 +197,51 @@ if (!isDisplay) {
         answers: {},
         votes: {}
       });
-
       setTimeout(() => sessionRef.remove(), 8 * 60 * 60 * 1000);
+      showModTopbar();
       showModeratorWelcomeEdit();
     });
   }
 }
 
-// ─── MODERATOR: Welcome Screen Editor ─────────────────────────────────────
+// ─── MODERATOR: Welcome Editor ─────────────────────────────────────────────
 function showModeratorWelcomeEdit() {
   showScreen('screen-mod-welcome-edit');
 
-  // Display-Link anzeigen
+  // Clickable beamer link
   const displayUrl = window.location.origin + window.location.pathname + '?display=1&code=' + sessionCode;
-  document.getElementById('display-url').textContent = displayUrl;
+  const linkEl     = document.getElementById('display-url-link');
+  const textEl     = document.getElementById('display-url-text');
+  linkEl.href      = displayUrl;
+  textEl.textContent = displayUrl;
 
-  document.getElementById('btn-copy-display-link').onclick = () => {
-    navigator.clipboard.writeText(displayUrl).then(() => toast('Beamer-Link kopiert!', 'success'));
+  // Live preview: attach input listeners once
+  ['welcome-emoji', 'welcome-title', 'welcome-subtitle'].forEach(id => {
+    const el = document.getElementById(id);
+    el.oninput = saveWelcomeToFirebase;
+  });
+
+  document.getElementById('btn-save-welcome').onclick = () => {
+    saveWelcomeToFirebase();
+    sessionRef.child('phase').set('welcome');
+    toast('Willkommensscreen ist live!', 'success');
   };
 
-  // Live-Preview beim Tippen
-  ['welcome-title', 'welcome-subtitle', 'welcome-emoji'].forEach(id => {
-    document.getElementById(id).addEventListener('input', saveWelcomePreview);
-  });
-
-  document.getElementById('btn-save-welcome').addEventListener('click', () => {
-    saveWelcomePreview();
-    sessionRef.child('phase').set('welcome');
-    toast('Willkommensscreen aktiv!', 'success');
-  });
-
-  document.getElementById('btn-go-lobby').addEventListener('click', () => {
-    saveWelcomePreview();
+  document.getElementById('btn-go-lobby').onclick = () => {
+    saveWelcomeToFirebase();
     sessionRef.child('phase').set('lobby');
     showModeratorLobby();
-  });
+  };
 }
 
-function saveWelcomePreview() {
+function saveWelcomeToFirebase() {
   const title    = document.getElementById('welcome-title').value.trim()    || 'Willkommen';
   const subtitle = document.getElementById('welcome-subtitle').value.trim() || '';
   const emoji    = document.getElementById('welcome-emoji').value.trim()    || '✦';
   sessionRef.child('welcome').set({ title, subtitle, emoji });
 }
 
-// ─── MODERATOR: Lobby ─────────────────────────────────────────────────────
+// ─── MODERATOR: Lobby ──────────────────────────────────────────────────────
 function showModeratorLobby() {
   showScreen('screen-mod-lobby');
 
@@ -257,7 +255,6 @@ function showModeratorLobby() {
     colorDark: '#0f0e17', colorLight: '#ffffff',
     correctLevel: QRCode.CorrectLevel.M
   });
-
   document.getElementById('session-code-display').textContent = sessionCode;
 
   sessionRef.child('participants').on('value', snap => {
@@ -269,12 +266,15 @@ function showModeratorLobby() {
   });
 
   document.getElementById('btn-start-icebreaker').onclick = () => {
-    // Clean up previous round data before starting
     sessionRef.update({ answers: null, votes: null }).then(() => {
       sessionRef.child('phase').set('input');
       showScreen('screen-mod-waiting');
       watchAnswers();
     });
+  };
+
+  document.getElementById('btn-copy-link').onclick = () => {
+    navigator.clipboard.writeText(joinUrl).then(() => toast('Link kopiert!', 'success'));
   };
 }
 
@@ -289,11 +289,11 @@ function renderParticipantList(participants) {
   });
 }
 
-// ─── MODERATOR: Waiting for answers ───────────────────────────────────────
+// ─── MODERATOR: Waiting for Answers ────────────────────────────────────────
 function watchAnswers() {
   if (answersListener) sessionRef.child('answers').off('value', answersListener);
   answersListener = sessionRef.child('answers').on('value', snap => {
-    const answers = snap.val() || {};
+    const answers     = snap.val() || {};
     const answerCount = Object.keys(answers).length;
     sessionRef.child('participants').once('value', pSnap => {
       const total = Object.keys(pSnap.val() || {}).length;
@@ -309,7 +309,7 @@ function watchAnswers() {
   };
 }
 
-// ─── MODERATOR: Voting progress ───────────────────────────────────────────
+// ─── MODERATOR: Voting Progress ────────────────────────────────────────────
 function watchVotingProgress() {
   if (votesListener) sessionRef.child('votes').off('value', votesListener);
   votesListener = sessionRef.child('votes').on('value', vSnap => {
@@ -328,7 +328,7 @@ function watchVotingProgress() {
   };
 }
 
-// ─── MODERATOR: Results ───────────────────────────────────────────────────
+// ─── MODERATOR: Results ────────────────────────────────────────────────────
 async function showModResults() {
   showScreen('screen-mod-results');
 
@@ -352,13 +352,9 @@ async function showModResults() {
       if (guessedId === authorId) correctGuessers.push(nameMap[voterId] || '?');
       else wrongGuessers.push({ voter: nameMap[voterId] || '?', guessed: nameMap[guessedId] || '?' });
     });
-    return { authorId, authorName: nameMap[authorId] || '?', answer: answer.text, correctGuessers, wrongGuessers };
+    return { authorName: nameMap[authorId] || '?', answer: answer.text, correctGuessers, wrongGuessers };
   });
 
-  renderModResults(items, votes);
-}
-
-function renderModResults(items, votes) {
   const container = document.getElementById('results-container');
   container.innerHTML = '';
   items.forEach((item, i) => {
@@ -379,11 +375,11 @@ function renderModResults(items, votes) {
   });
 
   document.getElementById('btn-new-round').onclick = () => {
-    // Reset only game data, keep participants
     sessionRef.update({ answers: null, votes: null }).then(() => {
-      sessionRef.child('phase').set('lobby');
-      showModeratorLobby();
-      toast('Neue Runde gestartet!', 'success');
+      // Go back to welcome screen after each round
+      sessionRef.child('phase').set('welcome');
+      showModeratorWelcomeEdit();
+      toast('Zurück zum Willkommensscreen', 'success');
     });
   };
 }
@@ -393,7 +389,6 @@ if (!isDisplay) {
   const joinCode = getUrlParam('join');
   if (joinCode) {
     isModerator = false;
-    // joinCode might be the full URL if old QR, extract just the code part
     sessionCode = joinCode.length <= 8 ? joinCode.toUpperCase() : joinCode.split('/').pop().toUpperCase();
     showScreen('screen-join');
     document.getElementById('session-code-join').textContent = sessionCode;
@@ -413,11 +408,9 @@ if (!isDisplay) {
 
       sessionRef.once('value', snap => {
         if (!snap.exists()) { toast('Session nicht gefunden!', 'error'); return; }
-
         const participantRef = sessionRef.child('participants/' + myId);
         participantRef.set({ id: myId, name: myName, joinedAt: Date.now() });
         participantRef.onDisconnect().remove();
-
         watchSessionPhase();
       });
     });
@@ -427,14 +420,13 @@ if (!isDisplay) {
 // ─── PARTICIPANT: Watch Phase ──────────────────────────────────────────────
 function watchSessionPhase() {
   if (phaseListener) sessionRef.child('phase').off('value', phaseListener);
-
   phaseListener = sessionRef.child('phase').on('value', snap => {
     const phase = snap.val();
-    if      (phase === 'welcome') showParticipantLobby();  // show waiting during welcome
+    if      (phase === 'welcome') showParticipantLobby();
     else if (phase === 'lobby')   showParticipantLobby();
     else if (phase === 'input')   showParticipantInput();
     else if (phase === 'voting')  showParticipantVoting();
-    else if (phase === 'results') showParticipantResults();
+    else if (phase === 'results') showParticipantResultsOnPhone();
   });
 }
 
@@ -448,7 +440,6 @@ function showParticipantLobby() {
 }
 
 function showParticipantInput() {
-  // Reset input UI for new round
   const textarea = document.getElementById('input-answer');
   const btn      = document.getElementById('btn-submit-answer');
   textarea.value    = '';
@@ -465,7 +456,6 @@ if (btnSubmitAnswer) {
     const answer = document.getElementById('input-answer').value.trim();
     if (!answer) { toast('Bitte schreib etwas!', 'error'); return; }
     if (answer.length > 120) { toast('Maximal 120 Zeichen', 'error'); return; }
-
     sessionRef.child('answers/' + myId).set({ text: answer, authorId: myId });
     btnSubmitAnswer.disabled = true;
     document.getElementById('input-answer').disabled = true;
@@ -475,7 +465,7 @@ if (btnSubmitAnswer) {
 
 async function showParticipantVoting() {
   showScreen('screen-participant-voting');
-  myVotes = {}; // reset for new round
+  myVotes = {};
 
   const [answersSnap, participantsSnap] = await Promise.all([
     sessionRef.child('answers').once('value'),
@@ -494,7 +484,7 @@ async function showParticipantVoting() {
 let myVotes = {};
 
 function renderVotingCards(answers, nameList) {
-  const container    = document.getElementById('voting-cards');
+  const container     = document.getElementById('voting-cards');
   container.innerHTML = '';
   myVotes = {};
 
@@ -544,15 +534,73 @@ function checkAllVoted(total) {
     : 'Abstimmung abschicken ✓';
 }
 
-function showParticipantResults() {
+// ─── PARTICIPANT: Results on Phone ─────────────────────────────────────────
+async function showParticipantResultsOnPhone() {
   showScreen('screen-participant-results');
-}
 
-// ─── Misc ──────────────────────────────────────────────────────────────────
-const btnCopyLink = document.getElementById('btn-copy-link');
-if (btnCopyLink) {
-  btnCopyLink.addEventListener('click', () => {
-    const url = document.getElementById('join-url').textContent;
-    navigator.clipboard.writeText(url).then(() => toast('Link kopiert!', 'success'));
+  const [answersSnap, votesSnap, participantsSnap] = await Promise.all([
+    sessionRef.child('answers').once('value'),
+    sessionRef.child('votes').once('value'),
+    sessionRef.child('participants').once('value')
+  ]);
+
+  const answers      = answersSnap.val()      || {};
+  const votes        = votesSnap.val()        || {};
+  const participants = participantsSnap.val() || {};
+  const nameMap      = {};
+  Object.entries(participants).forEach(([id, p]) => nameMap[id] = p.name);
+
+  // Find my own answer and how many guessed correctly
+  const myAnswer       = answers[myId];
+  const myVoteResults  = votes[myId] || {};
+
+  // Build compact result list
+  const items = Object.entries(answers).map(([authorId, answer]) => {
+    const isMe = authorId === myId;
+    const correctGuessers = [];
+    Object.entries(votes).forEach(([voterId, voterVotes]) => {
+      if (voterVotes[authorId] === authorId) correctGuessers.push(nameMap[voterId] || '?');
+    });
+    // Did I guess this one right?
+    const myGuess    = myVoteResults[authorId];
+    const iGuessedIt = myGuess === authorId;
+    return { authorName: nameMap[authorId] || '?', text: answer.text, correctGuessers, isMe, iGuessedIt };
   });
+
+  const container = document.getElementById('p-results-container');
+  container.innerHTML = '';
+
+  items.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'result-card';
+    card.style.animationDelay = (i * 0.08) + 's';
+
+    let badge = '';
+    if (item.isMe) {
+      badge = `<span class="badge badge-yellow" style="margin-bottom:8px;">Das warst du!</span>`;
+    } else if (item.iGuessedIt) {
+      badge = `<span class="badge badge-success" style="margin-bottom:8px;">Richtig erraten ✓</span>`;
+    } else {
+      badge = `<span class="badge" style="margin-bottom:8px;background:var(--accent3)22;color:var(--accent3);">Nicht erraten ✗</span>`;
+    }
+
+    card.innerHTML = `
+      ${badge}
+      <div class="result-answer">"${item.text}"</div>
+      <div class="result-reveal" style="font-size:14px;">
+        → <strong>${item.authorName}</strong>
+        <span class="result-score">${item.correctGuessers.length} haben es erraten</span>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  // After 8 seconds show the "put away" hint
+  setTimeout(() => {
+    const putAway = document.getElementById('p-put-away');
+    putAway.style.display = 'block';
+    putAway.style.animation = 'fadeUp .5s ease';
+    // After another 5 seconds switch to idle screen
+    setTimeout(() => showScreen('screen-participant-idle'), 5000);
+  }, 8000);
 }

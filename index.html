@@ -12,17 +12,28 @@
 <body>
 
 <!-- ════════════════════════════════════════════════════════
+     MODERATOR TOPBAR (immer sichtbar wenn Mod eingeloggt)
+════════════════════════════════════════════════════════ -->
+<div id="mod-topbar" class="mod-topbar" style="display:none;">
+  <div class="logo" style="font-size:18px;">Coach<span>Board</span></div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button id="btn-topbar-welcome" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">
+      🏠 Willkommen
+    </button>
+    <span class="live-dot">Live</span>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
      BEAMER / DISPLAY MODE  (?display=1&code=XXXXX)
-     Dieser Screen wird auf dem zweiten Bildschirm gezeigt
 ════════════════════════════════════════════════════════ -->
 <div id="screen-display" class="screen">
   <div class="display-wrap">
-    <!-- Logo oben links -->
     <div class="display-topbar">
       <div class="logo" style="font-size:20px;">Coach<span>Board</span></div>
       <span class="live-dot">Live</span>
     </div>
-    <!-- Inhalt wird per JS befüllt -->
     <div id="display-content"></div>
   </div>
 </div>
@@ -49,44 +60,42 @@
 <!-- ════════════════════════════════════════════════════════
      MODERATOR: WILLKOMMENSSCREEN EDITOR
 ════════════════════════════════════════════════════════ -->
-<div id="screen-mod-welcome-edit" class="screen">
+<div id="screen-mod-welcome-edit" class="screen has-topbar">
   <div class="page">
-    <div class="flex-between mb-24">
-      <div class="logo" style="font-size:22px;">Coach<span>Board</span></div>
-      <span class="badge badge-yellow">Vorbereitung</span>
-    </div>
 
-    <!-- Beamer-Link Box -->
+    <!-- Beamer-Link als echter Link -->
     <div class="card" style="border-color:rgba(123,110,246,.4);margin-bottom:20px;">
-      <div style="font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
-        📺 Beamer-Link
-      </div>
-      <p class="muted" style="font-size:13px;margin-bottom:10px;">
-        Öffne diesen Link auf dem zweiten Bildschirm / Beamer. Er zeigt immer das, was die Gruppe sieht.
+      <div style="font-weight:600;margin-bottom:6px;">📺 Beamer-Link</div>
+      <p class="muted" style="font-size:13px;margin-bottom:12px;">
+        Klick auf den Link → neuer Tab öffnet sich → Tab auf den Beamer-Screen ziehen.
       </p>
-      <div id="display-url" class="url-display" style="background:var(--surface2);padding:8px 12px;border-radius:var(--r-sm);text-align:left;font-size:12px;word-break:break-all;margin-bottom:10px;"></div>
-      <button id="btn-copy-display-link" class="btn btn-secondary btn-full">📋 &nbsp;Beamer-Link kopieren</button>
+      <a id="display-url-link" href="#" target="_blank" class="display-link-box">
+        <span id="display-url-text">wird geladen…</span>
+        <span class="display-link-icon">↗</span>
+      </a>
     </div>
 
     <!-- Welcome Editor -->
     <div class="card card-glow">
       <h3 style="margin-bottom:4px;">Willkommensscreen gestalten</h3>
-      <p class="muted mb-16" style="font-size:13px;">Wird auf dem Beamer angezeigt bevor die Session startet.</p>
+      <p class="muted mb-16" style="font-size:13px;">Änderungen erscheinen sofort auf dem Beamer.</p>
 
-      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px;">EMOJI</label>
-      <input id="welcome-emoji" type="text" value="✦" placeholder="z.B. 🎯 oder ✦" maxlength="4" style="font-size:24px;text-align:center;margin-bottom:12px;" />
+      <label class="field-label">EMOJI</label>
+      <input id="welcome-emoji" type="text" value="✦" placeholder="z.B. 🎯" maxlength="4"
+        style="font-size:24px;text-align:center;" />
 
-      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px;">TITEL</label>
+      <label class="field-label">TITEL</label>
       <input id="welcome-title" type="text" placeholder="z.B. Leadership Workshop" maxlength="60" />
 
-      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px;">UNTERTITEL</label>
+      <label class="field-label">UNTERTITEL</label>
       <input id="welcome-subtitle" type="text" placeholder="z.B. IHK Köln · Mai 2025" maxlength="80" />
 
-      <div style="display:flex;gap:10px;margin-top:8px;">
-        <button id="btn-save-welcome" class="btn btn-secondary">Auf Beamer zeigen</button>
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+        <button id="btn-save-welcome" class="btn btn-secondary">Auf Beamer zeigen ✓</button>
         <button id="btn-go-lobby" class="btn btn-primary">Weiter zu QR-Code →</button>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -94,12 +103,8 @@
 <!-- ════════════════════════════════════════════════════════
      MODERATOR: LOBBY (QR + Warteliste)
 ════════════════════════════════════════════════════════ -->
-<div id="screen-mod-lobby" class="screen">
+<div id="screen-mod-lobby" class="screen has-topbar">
   <div class="page">
-    <div class="flex-between mb-24">
-      <div class="logo" style="font-size:24px;">Coach<span>Board</span></div>
-      <span class="live-dot">Live</span>
-    </div>
 
     <div class="card card-glow center">
       <h3 style="font-family:var(--font-d);font-size:20px;margin-bottom:4px;">Teilnehmer einladen</h3>
@@ -124,6 +129,7 @@
       <button id="btn-start-icebreaker" class="btn btn-primary btn-full" disabled>Icebreaker starten →</button>
       <p class="muted mt-8" style="font-size:12px;text-align:center;">Mindestens 2 Teilnehmer nötig</p>
     </div>
+
   </div>
 </div>
 
@@ -131,9 +137,8 @@
 <!-- ════════════════════════════════════════════════════════
      MODERATOR: WARTEN (auf Antworten)
 ════════════════════════════════════════════════════════ -->
-<div id="screen-mod-waiting" class="screen">
-  <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-    <div class="logo mb-24" style="font-size:22px;">Coach<span>Board</span></div>
+<div id="screen-mod-waiting" class="screen has-topbar">
+  <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 56px);">
     <div class="card card-glow center">
       <div class="waiting-icon"></div>
       <h2>Antworten kommen rein…</h2>
@@ -149,9 +154,8 @@
 <!-- ════════════════════════════════════════════════════════
      MODERATOR: ABSTIMMUNG läuft
 ════════════════════════════════════════════════════════ -->
-<div id="screen-mod-voting" class="screen">
-  <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-    <div class="logo mb-24" style="font-size:22px;">Coach<span>Board</span></div>
+<div id="screen-mod-voting" class="screen has-topbar">
+  <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:calc(100vh - 56px);">
     <div class="card card-glow center">
       <div class="waiting-icon"></div>
       <h2>Abstimmung läuft</h2>
@@ -166,13 +170,12 @@
 <!-- ════════════════════════════════════════════════════════
      MODERATOR: ERGEBNISSE
 ════════════════════════════════════════════════════════ -->
-<div id="screen-mod-results" class="screen">
+<div id="screen-mod-results" class="screen has-topbar">
   <div class="page">
     <div class="flex-between mb-24">
-      <div class="logo" style="font-size:22px;">Coach<span>Board</span></div>
+      <h2 style="margin:0;">Auflösung 🎉</h2>
       <button id="btn-new-round" class="btn btn-ghost">↺ Neue Runde</button>
     </div>
-    <h2 style="margin-bottom:4px;">Auflösung 🎉</h2>
     <p class="mb-24">Wer kannte wen wirklich?</p>
     <div id="results-container"></div>
   </div>
@@ -188,8 +191,9 @@
     <div class="card card-glow">
       <h2 class="center" style="margin-bottom:6px;">Willkommen!</h2>
       <p class="center mb-24">Session: <strong id="session-code-join" style="color:var(--accent);letter-spacing:2px;"></strong></p>
-      <label class="muted" style="font-size:13px;display:block;margin-bottom:6px;">Dein Name</label>
-      <input id="input-name" type="text" placeholder="Wie heißt du?" autocomplete="off" style="font-size:18px;text-align:center;" maxlength="30" />
+      <label class="field-label">Dein Name</label>
+      <input id="input-name" type="text" placeholder="Wie heißt du?" autocomplete="off"
+        style="font-size:18px;text-align:center;" maxlength="30" />
       <button id="btn-join" class="btn btn-primary btn-lg btn-full mt-8">Beitreten →</button>
     </div>
   </div>
@@ -205,7 +209,9 @@
       <span class="emoji-big">👋</span>
       <h2>Hallo, <span id="p-name-display"></span>!</h2>
       <p class="mt-8 mb-16">Du bist verbunden. Die Moderatorin startet gleich.</p>
-      <div class="live-dot" style="justify-content:center;"><span id="p-participant-count">Verbinde…</span></div>
+      <div class="live-dot" style="justify-content:center;">
+        <span id="p-participant-count">Verbinde…</span>
+      </div>
     </div>
   </div>
 </div>
@@ -221,8 +227,10 @@
       <span class="badge badge-yellow mb-16">Nobody is Perfect</span>
       <h2 style="margin-bottom:12px;">Deine überraschende Wahrheit</h2>
       <p class="mb-24">Schreib etwas über dich, das die anderen <em>nicht</em> vermuten würden. Keine Namen – die Gruppe soll rätseln!</p>
-      <label class="muted" style="font-size:13px;display:block;margin-bottom:6px;">Deine Antwort (max. 120 Zeichen)</label>
-      <textarea id="input-answer" placeholder="z.B. »Ich habe mal einen Weltrekord aufgestellt.«" maxlength="120" rows="4"></textarea>
+      <label class="field-label">Deine Antwort (max. 120 Zeichen)</label>
+      <textarea id="input-answer"
+        placeholder="z.B. »Ich habe mal einen Weltrekord aufgestellt.«"
+        maxlength="120" rows="4"></textarea>
       <button id="btn-submit-answer" class="btn btn-primary btn-lg btn-full">Abschicken ✓</button>
     </div>
   </div>
@@ -275,14 +283,37 @@
 
 
 <!-- ════════════════════════════════════════════════════════
-     TEILNEHMER: ERGEBNIS (schau auf Beamer)
+     TEILNEHMER: ERGEBNISSE (auf dem Handy)
 ════════════════════════════════════════════════════════ -->
 <div id="screen-participant-results" class="screen">
+  <div class="page">
+    <div class="logo mb-16" style="font-size:22px;text-align:center;">Coach<span>Board</span></div>
+    <h2 style="margin-bottom:4px;text-align:center;">Auflösung 🎉</h2>
+    <p class="mb-20" style="text-align:center;">Wer kannte wen wirklich?</p>
+    <div id="p-results-container"></div>
+    <!-- Weglegen-Hinweis erscheint nach kurzem Delay -->
+    <div id="p-put-away" style="display:none;">
+      <div class="put-away-card">
+        <span style="font-size:36px;">📱</span>
+        <div style="font-weight:600;margin:8px 0 4px;">Danke!</div>
+        <div style="color:var(--muted);font-size:13px;">Du kannst dein Handy jetzt weglegen.<br>Die Moderatorin führt weiter.</div>
+      </div>
+    </div>
+    <div style="height:32px;"></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: WEGLEGEN (nach Ergebnissen, ruhig)
+════════════════════════════════════════════════════════ -->
+<div id="screen-participant-idle" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
     <div class="card card-glow center">
-      <span class="emoji-big">🎉</span>
-      <h2>Auflösung!</h2>
-      <p class="mt-8">Schau auf den großen Screen der Moderatorin.</p>
+      <span class="emoji-big">☕</span>
+      <h2>Bis gleich!</h2>
+      <p class="mt-8">Die Moderatorin meldet sich wenn's weiter geht.</p>
+      <div class="live-dot mt-16" style="justify-content:center;">verbunden</div>
     </div>
   </div>
 </div>
@@ -294,9 +325,7 @@
 <!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-<!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- App -->
 <script src="firebase.js"></script>
 <script src="app.js"></script>
 </body>
