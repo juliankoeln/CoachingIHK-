@@ -11,317 +11,293 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: HOME (Moderatorin startet Session)
-════════════════════════════════════════════════════════════════════════ -->
-<div id="screen-home" class="screen">
-  <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
-    <div style="margin-bottom:48px;">
-      <div class="logo">Coach<span>Board</span></div>
-      <p class="mt-8" style="font-size:15px;">Live-Tools für Coaching & Workshops</p>
+<!-- ════════════════════════════════════════════════════════
+     BEAMER / DISPLAY MODE  (?display=1&code=XXXXX)
+     Dieser Screen wird auf dem zweiten Bildschirm gezeigt
+════════════════════════════════════════════════════════ -->
+<div id="screen-display" class="screen">
+  <div class="display-wrap">
+    <!-- Logo oben links -->
+    <div class="display-topbar">
+      <div class="logo" style="font-size:20px;">Coach<span>Board</span></div>
+      <span class="live-dot">Live</span>
     </div>
-
-    <h1 style="margin-bottom:16px;">Eine Gruppe.<br>Echte Momente.</h1>
-    <p style="margin-bottom:40px;max-width:380px;">
-      Erstelle eine Session, zeig den QR-Code – und los geht's.<br>
-      Teilnehmer brauchen nur ihr Handy.
-    </p>
-
-    <button id="btn-create-session" class="btn btn-primary btn-lg btn-full">
-      ✦ &nbsp;Neue Session starten
-    </button>
-
-    <!-- Background decoration -->
-    <div style="position:fixed;top:-120px;right:-120px;width:400px;height:400px;border-radius:50%;
-      background:radial-gradient(circle,rgba(123,110,246,.12) 0%,transparent 70%);pointer-events:none;"></div>
-    <div style="position:fixed;bottom:-80px;left:-80px;width:280px;height:280px;border-radius:50%;
-      background:radial-gradient(circle,rgba(232,197,71,.07) 0%,transparent 70%);pointer-events:none;"></div>
+    <!-- Inhalt wird per JS befüllt -->
+    <div id="display-content"></div>
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: MODERATOR LOBBY (QR-Code + Warteliste)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     HOME
+════════════════════════════════════════════════════════ -->
+<div id="screen-home" class="screen">
+  <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
+    <div style="margin-bottom:48px;">
+      <div class="logo">Coach<span>Board</span></div>
+      <p class="mt-8" style="font-size:15px;">Live-Tools für Coaching & Workshops</p>
+    </div>
+    <h1 style="margin-bottom:16px;">Eine Gruppe.<br>Echte Momente.</h1>
+    <p style="margin-bottom:40px;max-width:380px;">Erstelle eine Session, zeig den QR-Code – und los geht's. Teilnehmer brauchen nur ihr Handy.</p>
+    <button id="btn-create-session" class="btn btn-primary btn-lg btn-full">✦ &nbsp;Neue Session starten</button>
+    <div style="position:fixed;top:-120px;right:-120px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(123,110,246,.12) 0%,transparent 70%);pointer-events:none;"></div>
+    <div style="position:fixed;bottom:-80px;left:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(232,197,71,.07) 0%,transparent 70%);pointer-events:none;"></div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     MODERATOR: WILLKOMMENSSCREEN EDITOR
+════════════════════════════════════════════════════════ -->
+<div id="screen-mod-welcome-edit" class="screen">
+  <div class="page">
+    <div class="flex-between mb-24">
+      <div class="logo" style="font-size:22px;">Coach<span>Board</span></div>
+      <span class="badge badge-yellow">Vorbereitung</span>
+    </div>
+
+    <!-- Beamer-Link Box -->
+    <div class="card" style="border-color:rgba(123,110,246,.4);margin-bottom:20px;">
+      <div style="font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
+        📺 Beamer-Link
+      </div>
+      <p class="muted" style="font-size:13px;margin-bottom:10px;">
+        Öffne diesen Link auf dem zweiten Bildschirm / Beamer. Er zeigt immer das, was die Gruppe sieht.
+      </p>
+      <div id="display-url" class="url-display" style="background:var(--surface2);padding:8px 12px;border-radius:var(--r-sm);text-align:left;font-size:12px;word-break:break-all;margin-bottom:10px;"></div>
+      <button id="btn-copy-display-link" class="btn btn-secondary btn-full">📋 &nbsp;Beamer-Link kopieren</button>
+    </div>
+
+    <!-- Welcome Editor -->
+    <div class="card card-glow">
+      <h3 style="margin-bottom:4px;">Willkommensscreen gestalten</h3>
+      <p class="muted mb-16" style="font-size:13px;">Wird auf dem Beamer angezeigt bevor die Session startet.</p>
+
+      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px;">EMOJI</label>
+      <input id="welcome-emoji" type="text" value="✦" placeholder="z.B. 🎯 oder ✦" maxlength="4" style="font-size:24px;text-align:center;margin-bottom:12px;" />
+
+      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px;">TITEL</label>
+      <input id="welcome-title" type="text" placeholder="z.B. Leadership Workshop" maxlength="60" />
+
+      <label class="muted" style="font-size:12px;display:block;margin-bottom:4px;">UNTERTITEL</label>
+      <input id="welcome-subtitle" type="text" placeholder="z.B. IHK Köln · Mai 2025" maxlength="80" />
+
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button id="btn-save-welcome" class="btn btn-secondary">Auf Beamer zeigen</button>
+        <button id="btn-go-lobby" class="btn btn-primary">Weiter zu QR-Code →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     MODERATOR: LOBBY (QR + Warteliste)
+════════════════════════════════════════════════════════ -->
 <div id="screen-mod-lobby" class="screen">
   <div class="page">
-
     <div class="flex-between mb-24">
       <div class="logo" style="font-size:24px;">Coach<span>Board</span></div>
       <span class="live-dot">Live</span>
     </div>
 
-    <!-- QR Card -->
     <div class="card card-glow center">
       <h3 style="font-family:var(--font-d);font-size:20px;margin-bottom:4px;">Teilnehmer einladen</h3>
       <p class="muted mt-4">QR-Code scannen oder Code eingeben</p>
-
       <div id="qr-code"></div>
-
       <div id="session-code-display" class="code-display">– – – – –</div>
       <div id="join-url" class="url-display"></div>
-
-      <button id="btn-copy-link" class="btn btn-ghost" style="margin:0 auto;">
-        📋 &nbsp;Link kopieren
-      </button>
+      <button id="btn-copy-link" class="btn btn-ghost" style="margin:0 auto;">📋 &nbsp;Link kopieren</button>
     </div>
 
-    <!-- Participants -->
     <div class="card">
       <div class="flex-between mb-16">
         <h3>Verbundene Teilnehmer</h3>
-        <span class="badge badge-success">
-          <span id="participant-count">0</span> online
-        </span>
+        <span class="badge badge-success"><span id="participant-count">0</span> online</span>
       </div>
-      <div id="participant-list">
-        <span class="muted" style="font-size:13px;">Warten auf Teilnehmer…</span>
-      </div>
+      <div id="participant-list"><span class="muted" style="font-size:13px;">Warten auf Teilnehmer…</span></div>
     </div>
 
-    <!-- Start -->
     <div class="card" style="border-color:rgba(232,197,71,.3);">
       <h3>Icebreaker: Nobody is Perfect</h3>
       <p class="mt-4 mb-16">Jede Person schreibt eine überraschende Wahrheit über sich. Die Gruppe tippt, wer was geschrieben hat.</p>
-      <button id="btn-start-icebreaker" class="btn btn-primary btn-full" disabled>
-        Icebreaker starten →
-      </button>
+      <button id="btn-start-icebreaker" class="btn btn-primary btn-full" disabled>Icebreaker starten →</button>
       <p class="muted mt-8" style="font-size:12px;text-align:center;">Mindestens 2 Teilnehmer nötig</p>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: MODERATOR WAITING (für Antworten)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     MODERATOR: WARTEN (auf Antworten)
+════════════════════════════════════════════════════════ -->
 <div id="screen-mod-waiting" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="logo mb-24" style="font-size:22px;">Coach<span>Board</span></div>
-
     <div class="card card-glow center">
       <div class="waiting-icon"></div>
       <h2>Antworten kommen rein…</h2>
       <p class="mt-8 mb-16">Teilnehmer schreiben gerade ihre überraschende Wahrheit.</p>
       <div id="answer-progress" class="progress-text">0 von ? Antworten eingegangen</div>
-
-      <button id="btn-start-voting" class="btn btn-primary btn-full" disabled>
-        Abstimmung starten →
-      </button>
+      <button id="btn-start-voting" class="btn btn-primary btn-full" disabled>Abstimmung starten →</button>
       <p class="muted mt-8" style="font-size:12px;">Mindestens 2 Antworten nötig</p>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: MODERATOR VOTING (warten + Fortschritt)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     MODERATOR: ABSTIMMUNG läuft
+════════════════════════════════════════════════════════ -->
 <div id="screen-mod-voting" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="logo mb-24" style="font-size:22px;">Coach<span>Board</span></div>
-
     <div class="card card-glow center">
       <div class="waiting-icon"></div>
       <h2>Abstimmung läuft</h2>
       <p class="mt-8 mb-16">Teilnehmer tippen wer was geschrieben hat.</p>
       <div id="voting-progress" class="progress-text">0 von ? haben abgestimmt</div>
-
-      <button id="btn-show-results" class="btn btn-primary btn-full" disabled>
-        Ergebnisse zeigen 🎉
-      </button>
+      <button id="btn-show-results" class="btn btn-primary btn-full" disabled>Ergebnisse zeigen 🎉</button>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: MODERATOR RESULTS
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     MODERATOR: ERGEBNISSE
+════════════════════════════════════════════════════════ -->
 <div id="screen-mod-results" class="screen">
   <div class="page">
-
     <div class="flex-between mb-24">
       <div class="logo" style="font-size:22px;">Coach<span>Board</span></div>
       <button id="btn-new-round" class="btn btn-ghost">↺ Neue Runde</button>
     </div>
-
     <h2 style="margin-bottom:4px;">Auflösung 🎉</h2>
     <p class="mb-24">Wer kannte wen wirklich?</p>
-
     <div id="results-container"></div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT JOIN
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: JOIN
+════════════════════════════════════════════════════════ -->
 <div id="screen-join" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="logo mb-32" style="text-align:center;">Coach<span>Board</span></div>
-
     <div class="card card-glow">
       <h2 class="center" style="margin-bottom:6px;">Willkommen!</h2>
-      <p class="center mb-24">Session-Code:
-        <strong id="session-code-join" style="color:var(--accent);letter-spacing:2px;"></strong>
-      </p>
-
+      <p class="center mb-24">Session: <strong id="session-code-join" style="color:var(--accent);letter-spacing:2px;"></strong></p>
       <label class="muted" style="font-size:13px;display:block;margin-bottom:6px;">Dein Name</label>
-      <input id="input-name" type="text" placeholder="Wie heißt du?" autocomplete="off"
-        style="font-size:18px;text-align:center;" maxlength="30" />
-
-      <button id="btn-join" class="btn btn-primary btn-lg btn-full mt-8">
-        Beitreten →
-      </button>
+      <input id="input-name" type="text" placeholder="Wie heißt du?" autocomplete="off" style="font-size:18px;text-align:center;" maxlength="30" />
+      <button id="btn-join" class="btn btn-primary btn-lg btn-full mt-8">Beitreten →</button>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT LOBBY (warten)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: LOBBY (warten)
+════════════════════════════════════════════════════════ -->
 <div id="screen-participant-lobby" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="card card-glow center">
       <span class="emoji-big">👋</span>
       <h2>Hallo, <span id="p-name-display"></span>!</h2>
       <p class="mt-8 mb-16">Du bist verbunden. Die Moderatorin startet gleich.</p>
-      <div class="live-dot" style="justify-content:center;">
-        <span id="p-participant-count">Verbinde…</span>
-      </div>
+      <div class="live-dot" style="justify-content:center;"><span id="p-participant-count">Verbinde…</span></div>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT INPUT (Wahrheit schreiben)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: ANTWORT EINGEBEN
+════════════════════════════════════════════════════════ -->
 <div id="screen-participant-input" class="screen">
   <div class="page">
-
     <div class="logo mb-32" style="font-size:22px;">Coach<span>Board</span></div>
-
     <div class="card card-glow">
       <span class="badge badge-yellow mb-16">Nobody is Perfect</span>
       <h2 style="margin-bottom:12px;">Deine überraschende Wahrheit</h2>
-      <p class="mb-24">
-        Schreib etwas über dich, das die anderen <em>nicht</em> vermuten würden.
-        Keine Namen – die Gruppe soll rätseln!
-      </p>
-
+      <p class="mb-24">Schreib etwas über dich, das die anderen <em>nicht</em> vermuten würden. Keine Namen – die Gruppe soll rätseln!</p>
       <label class="muted" style="font-size:13px;display:block;margin-bottom:6px;">Deine Antwort (max. 120 Zeichen)</label>
-      <textarea id="input-answer"
-        placeholder="z.B. »Ich habe mal einen Weltrekord aufgestellt.«"
-        maxlength="120" rows="4"></textarea>
-
-      <button id="btn-submit-answer" class="btn btn-primary btn-lg btn-full">
-        Abschicken ✓
-      </button>
+      <textarea id="input-answer" placeholder="z.B. »Ich habe mal einen Weltrekord aufgestellt.«" maxlength="120" rows="4"></textarea>
+      <button id="btn-submit-answer" class="btn btn-primary btn-lg btn-full">Abschicken ✓</button>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT ANSWER SENT (warten auf Voting)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: ANTWORT GESENDET (warten)
+════════════════════════════════════════════════════════ -->
 <div id="screen-participant-answer-sent" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="card card-glow center">
       <span class="emoji-big">✨</span>
       <h2>Gut! Antwort ist drin.</h2>
       <p class="mt-8">Warte kurz – die Abstimmung startet gleich automatisch.</p>
       <div class="waiting-icon mt-24"></div>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT VOTING
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: ABSTIMMEN
+════════════════════════════════════════════════════════ -->
 <div id="screen-participant-voting" class="screen">
   <div class="page">
-
     <div class="logo mb-16" style="font-size:22px;">Coach<span>Board</span></div>
-
     <h2 style="margin-bottom:6px;">Wer hat das geschrieben?</h2>
     <p class="mb-24">Tippe bei jeder Aussage auf den Namen der Person, die du für den Autor hältst.</p>
-
     <div id="voting-cards"></div>
-
-    <button id="btn-submit-votes" class="btn btn-primary btn-lg btn-full" disabled>
-      Noch nicht alle beantwortet…
-    </button>
-
+    <button id="btn-submit-votes" class="btn btn-primary btn-lg btn-full" disabled>Noch nicht alle beantwortet…</button>
+    <div style="height:32px;"></div>
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT VOTED (warten auf Ergebnis)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: ABGESTIMMT (warten auf Auflösung)
+════════════════════════════════════════════════════════ -->
 <div id="screen-participant-voted" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="card card-glow center">
       <span class="emoji-big">🤫</span>
       <h2>Abgestimmt!</h2>
       <p class="mt-8">Warte auf die Auflösung der Moderatorin…</p>
       <div class="waiting-icon mt-24"></div>
     </div>
-
   </div>
 </div>
 
 
-<!-- ═══════════════════════════════════════════════════════════════════════
-     SCREEN: PARTICIPANT RESULTS (Auflösung auf eigenem Handy)
-════════════════════════════════════════════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════════════
+     TEILNEHMER: ERGEBNIS (schau auf Beamer)
+════════════════════════════════════════════════════════ -->
 <div id="screen-participant-results" class="screen">
   <div class="page" style="display:flex;flex-direction:column;justify-content:center;min-height:100vh;">
-
     <div class="card card-glow center">
       <span class="emoji-big">🎉</span>
       <h2>Auflösung!</h2>
       <p class="mt-8">Schau auf den großen Screen der Moderatorin.</p>
     </div>
-
   </div>
 </div>
 
 
-<!-- ── Toast ──────────────────────────────────────────────────────────── -->
+<!-- Toast -->
 <div id="toast" class="toast"></div>
 
-
-<!-- ── Firebase (compat SDK) ──────────────────────────────────────────── -->
+<!-- Firebase compat SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-
-<!-- QR Code library -->
+<!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <!-- App -->
 <script src="firebase.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
